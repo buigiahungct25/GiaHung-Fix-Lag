@@ -1,0 +1,75 @@
+-- Fix-Lag Lite (LocalScript)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Cài đặt mặc định (bạn có thể chỉnh)
+local Settings = {
+    DisableShadows = true,
+    DisableParticles = true,
+    DisableTrails = true,
+    FPSCounter = true
+}
+
+-- Hàm tắt particle / trail
+local function disableEffects()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("ParticleEmitter") and Settings.DisableParticles then
+            pcall(function() obj.Enabled = false end)
+        elseif obj:IsA("Trail") and Settings.DisableTrails then
+            pcall(function() obj.Enabled = false end)
+        end
+    end
+end
+
+-- Tắt bóng
+local function applyShadows()
+    if Settings.DisableShadows then
+        pcall(function() Lighting.GlobalShadows = false end)
+    end
+end
+
+-- Hiển thị FPS
+if Settings.FPSCounter then
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "FixLagLite_GUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 120, 0, 28)
+    label.Position = UDim2.new(0, 8, 0, 8)
+    label.BackgroundTransparency = 0.4
+    label.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.TextScaled = true
+    label.Text = "FPS: --"
+    label.Parent = screenGui
+
+    local frames = 0
+    local last = tick()
+    RunService.RenderStepped:Connect(function()
+        frames = frames + 1
+        local now = tick()
+        if now - last >= 1 then
+            label.Text = "FPS: "..tostring(frames)
+            frames = 0
+            last = now
+        end
+    end)
+end
+
+-- Thực thi
+disableEffects()
+applyShadows()
+
+-- Optional: theo dõi workspace mới sinh thêm phần tử và tắt ngay
+workspace.DescendantAdded:Connect(function(desc)
+    if desc:IsA("ParticleEmitter") and Settings.DisableParticles then
+        pcall(function() desc.Enabled = false end)
+    elseif desc:IsA("Trail") and Settings.DisableTrails then
+        pcall(function() desc.Enabled = false end)
+    end
+end)
