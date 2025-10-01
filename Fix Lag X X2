@@ -1,0 +1,125 @@
+-- Clear Map + Fix Lag + TurboLite Fix Lag + FPS Counter + Drag UI
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/buigiahungct25/GiaHung-Fix-Lag/refs/heads/main/ClearMap_FixLag_Turbo_FPS_Drag.lua"))()
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 280, 0, 230)
+Frame.Position = UDim2.new(0.5, -140, 0.5, -115)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "⚡ ClearMap + FixLag Hub"
+Title.TextColor3 = Color3.fromRGB(0, 255, 100)
+Title.TextScaled = true
+
+-- Hàm tạo button
+local function createButton(text, posY, callback)
+    local btn = Instance.new("TextButton", Frame)
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextScaled = true
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+-- Nút Clear Map
+createButton("🧹 Clear Map (Keep Ground)", 40, function()
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj ~= workspace.Terrain and obj.Name ~= "Baseplate" and obj ~= character then
+            pcall(function() obj:Destroy() end)
+        end
+    end
+    print("[ClearMap] Map cleared, ground kept!")
+end)
+
+-- Nút Fix Lag (link của bạn)
+createButton("⚡ Apply Fix Lag", 90, function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/buigiahungct25/Fixlag/refs/heads/main/f%C4%A9lag.lua8"))()
+    print("[FixLag] Script loaded!")
+end)
+
+-- Nút TurboLite Fix Lag
+createButton("🚀 TurboLite Fix Lag", 140, function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/TurboLite/Script/main/FixLag.lua"))()
+    print("[TurboLite FixLag] Script loaded!")
+end)
+
+-- FPS Counter
+local fpsLabel = Instance.new("TextLabel", ScreenGui)
+fpsLabel.Size = UDim2.new(0, 100, 0, 30)
+fpsLabel.Position = UDim2.new(0, 10, 0, 10)
+fpsLabel.BackgroundTransparency = 0.5
+fpsLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+fpsLabel.TextScaled = true
+fpsLabel.Text = "FPS: ..."
+Instance.new("UICorner", fpsLabel).CornerRadius = UDim.new(0, 8)
+
+-- Update FPS liên tục
+local lastUpdate = tick()
+local frameCount = 0
+RunService.RenderStepped:Connect(function()
+    frameCount += 1
+    if tick() - lastUpdate >= 1 then
+        fpsLabel.Text = "FPS: " .. tostring(frameCount)
+        frameCount = 0
+        lastUpdate = tick()
+    end
+end)
+
+-- Kéo thả mượt
+local dragging, dragInput, dragStart, startPos
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    TweenService:Create(Frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = newPos}):Play()
+end
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        updateDrag(input)
+    end
+end)
+
+-- Toggle menu bằng RightShift
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        Frame.Visible = not Frame.Visible
+    end
+end)
