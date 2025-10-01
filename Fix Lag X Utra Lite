@@ -1,0 +1,132 @@
+--// FixLag X Pro Ultimate
+-- Toggle menu: RightShift
+
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+local UserInputService = game:GetService("UserInputService")
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "FixLagXProUltimate"
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 270, 0, 310)
+Frame.Position = UDim2.new(0.5, -135, 0.5, -155)
+Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Frame.Active = true
+Frame.Draggable = true
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1,0,0,40)
+Title.BackgroundTransparency = 1
+Title.Text = "⚡ FixLag X Pro Ultimate"
+Title.TextColor3 = Color3.fromRGB(0,255,100)
+Title.TextScaled = true
+
+-- Hàm tạo button
+local function createButton(text, posY, callback)
+    local btn = Instance.new("TextButton", Frame)
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.TextScaled = true
+    btn.MouseButton1Click:Connect(callback)
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 8)
+    return btn
+end
+
+-- Trạng thái
+local isOn = false
+
+-- Hàm bật FixLag
+local function applyFixLag()
+    if settings and settings().Rendering then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    end
+    for _,v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
+        end
+    end
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    Lighting.Brightness = 1
+    Lighting.ShadowSoftness = 0
+    for _,v in pairs(Lighting:GetChildren()) do
+        if v:IsA("PostEffect") then
+            v.Enabled = false
+        end
+    end
+    print("[FixLag X Pro] Optimization applied!")
+end
+
+-- Hàm khôi phục
+local function restore()
+    if settings and settings().Rendering then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+    end
+    Lighting.GlobalShadows = true
+    for _,v in pairs(Lighting:GetChildren()) do
+        if v:IsA("PostEffect") then
+            v.Enabled = true
+        end
+    end
+    print("[FixLag X Pro] Restored default settings!")
+end
+
+-- Toggle Fix Lag
+local ToggleBtn = createButton("🚀 Bật Fix Lag", 50, function()
+    isOn = not isOn
+    if isOn then
+        applyFixLag()
+        ToggleBtn.Text = "❌ Tắt Fix Lag"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0,120,0)
+    else
+        restore()
+        ToggleBtn.Text = "🚀 Bật Fix Lag"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    end
+end)
+
+-- FPS Cap 30
+createButton("🎯 FPS Cap 30", 100, function()
+    if setfpscap then setfpscap(30) end
+    print("[FixLag X Pro] FPS capped at 30")
+end)
+
+-- FPS Cap 60
+createButton("🎯 FPS Cap 60", 150, function()
+    if setfpscap then setfpscap(60) end
+    print("[FixLag X Pro] FPS capped at 60")
+end)
+
+-- FPS Cap 120
+createButton("🎯 FPS Cap 120", 200, function()
+    if setfpscap then setfpscap(120) end
+    print("[FixLag X Pro] FPS capped at 120")
+end)
+
+-- FPS Unlock
+createButton("🚀 Unlock FPS (Max)", 250, function()
+    if setfpscap then setfpscap(9999) end
+    print("[FixLag X Pro] FPS unlocked (max)")
+end)
+
+-- Toggle menu bằng RightShift
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        Frame.Visible = not Frame.Visible
+    end
+end)
+
+print("[FixLag X Pro Ultimate] Loaded successfully!")
