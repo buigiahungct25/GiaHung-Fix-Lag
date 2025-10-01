@@ -1,0 +1,37 @@
+-- Fix Lag + Clear Map Safe Platform + TurboLite
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TurboLite/Script/main/FixLag.lua"))()
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Hàm Clear Map nhưng giữ Safe Platform
+local function ClearMapSafe()
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj ~= workspace.Terrain and obj.Name ~= "Baseplate" and obj ~= character then
+            pcall(function()
+                obj:Destroy()
+            end)
+        end
+    end
+
+    -- Xóa platform cũ nếu có
+    if workspace:FindFirstChild("SafePlatform") then
+        workspace.SafePlatform:Destroy()
+    end
+
+    -- Tạo nền an toàn rất rộng ở thấp
+    local safePart = Instance.new("Part")
+    safePart.Size = Vector3.new(1000, 5, 1000) -- Nền rộng
+    safePart.Position = Vector3.new(0, -10, 0) -- Đặt dưới chân (âm 10)
+    safePart.Anchored = true
+    safePart.Name = "SafePlatform"
+    safePart.Color = Color3.fromRGB(50, 200, 50)
+    safePart.Material = Enum.Material.Neon
+    safePart.Parent = workspace
+
+    print("[ClearMapSafe] Map cleared, Safe Platform created at Y = -10!")
+end
+
+-- Gọi thử khi chạy script
+ClearMapSafe()
